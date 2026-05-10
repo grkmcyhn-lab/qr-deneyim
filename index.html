@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Deneyim</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #f0f0f0;
+      padding: 1.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .screen { display: none; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    .label {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .lang-buttons, .type-buttons, .action-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .lang-btn {
+      flex: 1;
+      padding: 1.25rem 1rem;
+      border: 1px solid #222;
+      border-radius: 14px;
+      background: #111;
+      cursor: pointer;
+      color: #f0f0f0;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .lang-btn:hover { border-color: #444; background: #161616; }
+    .lang-btn .flag { font-size: 28px; }
+    .lang-btn .lname { font-size: 12px; color: #555; font-weight: 400; }
+
+    .type-btn {
+      flex: 1;
+      padding: 1rem 0.5rem;
+      border: 1px solid #222;
+      border-radius: 10px;
+      background: #111;
+      cursor: pointer;
+      font-size: 13px;
+      color: #888;
+      transition: all 0.15s;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .type-btn:hover, .type-btn.selected {
+      border-color: #f0f0f0;
+      color: #f0f0f0;
+      background: #161616;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid #333;
+      border-radius: 14px;
+      background: #f0f0f0;
+      color: #0a0a0a;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      transition: background 0.15s;
+    }
+    .main-btn:hover { background: #ddd; }
+    .main-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .loading-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 3rem 0;
+    }
+    .dots { display: flex; gap: 7px; }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #444;
+      animation: pulse 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .loading-txt { font-size: 13px; color: #555; }
+
+    .counter {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: #444;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .content-card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 1.5rem 1.25rem;
+      width: 100%;
+      margin-bottom: 1.25rem;
+    }
+
+    .content-tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #444;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 3px 8px;
+      margin-bottom: 1rem;
+    }
+
+    .content-text {
+      font-size: 16px;
+      line-height: 1.8;
+      color: #e0e0e0;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 0.85rem 0.5rem;
+      border: 1px solid #222;
+      border-radius: 10px;
+      background: #111;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #aaa;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .action-btn:hover { border-color: #444; color: #f0f0f0; }
+
+    .donate-btn {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid #1e1e1e;
+      border-radius: 14px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+      text-align: center;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .donate-btn:hover { color: #aaa; border-color: #333; }
+
+    .back-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #444;
+      margin-top: 1.5rem;
+      padding: 0;
+    }
+    .back-btn:hover { color: #888; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Dil Seçimi -->
+  <div class="screen active" id="lang-screen">
+    <p class="label">Choose your language / Dilini seç</p>
+    <div class="lang-buttons">
+      <button class="lang-btn" onclick="selectLang('tr')">
+        <span class="flag">🇹🇷</span>
+        <span>Türkçe</span>
+        <span class="lname">Devam et</span>
+      </button>
+      <button class="lang-btn" onclick="selectLang('en')">
+        <span class="flag">🇬🇧</span>
+        <span>English</span>
+        <span class="lname">Continue</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- İçerik Tipi -->
+  <div class="screen" id="type-screen">
+    <p class="label" id="type-label"></p>
+    <div class="type-buttons">
+      <button class="type-btn selected" id="btn-confession" onclick="selectType('confession')"></button>
+      <button class="type-btn" id="btn-hack" onclick="selectType('hack')"></button>
+    </div>
+    <button class="main-btn" id="gen-btn" onclick="generate()"></button>
+  </div>
+
+  <!-- Loading -->
+  <div class="screen" id="loading-screen">
+    <div class="loading-wrap">
+      <div class="dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <p class="loading-txt" id="loading-txt"></p>
+    </div>
+  </div>
+
+  <!-- İçerik -->
+  <div class="screen" id="content-screen">
+    <p class="counter" id="counter-txt"></p>
+    <div class="content-card">
+      <span class="content-tag" id="content-tag"></span>
+      <p class="content-text" id="content-text"></p>
+    </div>
+    <div class="action-row">
+      <button class="action-btn" id="share-btn" onclick="handleShare()"></button>
+      <button class="action-btn" id="another-btn" onclick="goType()"></button>
+    </div>
+    <button class="donate-btn" id="donate-btn" onclick="handleDonate()"></button>
+    <button class="back-btn" id="back-btn" onclick="goLang()"></button>
+  </div>
+
+</div>
+
+<script>
+  let lang = 'tr';
+  let contentType = 'confession';
+  let count = parseInt(localStorage.getItem('qr_reads') || '0');
+
+  const s = {
+    tr: {
+      typeLabel: 'Ne duymak istiyorsun?',
+      confession: 'Anonim İtiraf',
+      hack: 'Hayat Tüyosu',
+      genBtn: 'Göster →',
+      loading: 'Hazırlanıyor...',
+      tagConfession: 'Anonim İtiraf',
+      tagHack: 'Hayat Tüyosu',
+      share: 'Paylaş',
+      another: 'Bir tane daha',
+      donate: 'Bu içerikler metro yolculuğunu biraz daha katlanılır yapıyorsa\nbir kahve bırak ☕',
+      back: '← Geri',
+      counter: n => `#${n}. okuma`,
+      prompt: {
+        confession: 'Kısa, gerçekçi ve duygusal bir anonim itiraf yaz. İstanbul\'da yaşayan sıradan biri tarafından bırakılmış gibi hissettir. Metro, iş, ilişki, yalnızlık veya küçük suçluluk duygularından biri hakkında olsun. 2-4 cümle. Sadece itirafı yaz.',
+        hack: 'Günlük İstanbul yaşamında gerçekten işe yarayan, akıllı ve beklenmedik bir hayat tüyosu yaz. Metro, yemek, uyku veya verimlilik hakkında olabilir. 2-3 cümle. Sadece tüyoyu yaz.'
+      }
+    },
+    en: {
+      typeLabel: 'What do you want to hear?',
+      confession: 'Anonymous Confession',
+      hack: 'Life Hack',
+      genBtn: 'Show me →',
+      loading: 'Preparing...',
+      tagConfession: 'Anonymous Confession',
+      tagHack: 'Life Hack',
+      share: 'Share',
+      another: 'One more',
+      donate: 'If these little moments make your commute slightly better,\nbuy me a coffee ☕',
+      back: '← Back',
+      counter: n => `reading #${n}`,
+      prompt: {
+        confession: 'Write a short, realistic and emotional anonymous confession. Make it feel like it was left by an ordinary commuter. About commuting, work, relationships, loneliness or small guilty pleasures. 2-4 sentences. Write only the confession.',
+        hack: 'Write a clever and unexpected life hack that genuinely works in daily urban life. About commuting, food, sleep or productivity. 2-3 sentences. Write only the hack.'
+      }
+    }
+  };
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function selectLang(l) {
+    lang = l;
+    const t = s[l];
+    document.getElementById('type-label').textContent = t.typeLabel;
+    document.getElementById('btn-confession').textContent = t.confession;
+    document.getElementById('btn-hack').textContent = t.hack;
+    document.getElementById('gen-btn').textContent = t.genBtn;
+    selectType('confession');
+    show('type-screen');
+  }
+
+  function selectType(t) {
+    contentType = t;
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('btn-' + t).classList.add('selected');
+  }
+
+  async function generate() {
+    document.getElementById('loading-txt').textContent = s[lang].loading;
+    show('loading-screen');
+    count++;
+    try { localStorage.setItem('qr_reads', count); } catch(e) {}
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: s[lang].prompt[contentType] }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content.map(i => i.text || '').join('').trim();
+      const t = s[lang];
+      document.getElementById('counter-txt').textContent = t.counter(count);
+      document.getElementById('content-tag').textContent = contentType === 'confession' ? t.tagConfession : t.tagHack;
+      document.getElementById('content-text').textContent = text;
+      document.getElementById('share-btn').textContent = t.share;
+      document.getElementById('another-btn').textContent = t.another;
+      document.getElementById('donate-btn').textContent = t.donate;
+      document.getElementById('back-btn').textContent = t.back;
+      show('content-screen');
+    } catch(e) {
+      document.getElementById('content-text').textContent = lang === 'tr' ? 'Bir hata oluştu. Tekrar dene.' : 'Something went wrong. Try again.';
+      show('content-screen');
+    }
+  }
+
+  function handleShare() {
+    const text = document.getElementById('content-text').textContent;
+    if (navigator.share) navigator.share({ text });
+    else if (navigator.clipboard) navigator.clipboard.writeText(text);
+  }
+
+  function handleDonate() {
+    // buraya kendi donate linkini koy (buy me a coffee, papara vs)
+    alert(lang === 'tr' ? 'Yakında ☕' : 'Coming soon ☕');
+  }
+
+  function goType() { show('type-screen'); }
+  function goLang() { show('lang-screen'); }
+</script>
+</body>
+</html>
