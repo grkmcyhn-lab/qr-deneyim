@@ -4,637 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QR Deneyim</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #0a0a0a;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      color: #f0f0f0;
-      padding: 1.5rem;
-    }
-    .container { width: 100%; max-width: 400px; }
-    .screen { display: none; flex-direction: column; align-items: center; }
-    .screen.active { display: flex; }
-    .label {
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #555;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .lang-buttons { display: flex; gap: 10px; width: 100%; }
-    .lang-btn {
-      flex: 1;
-      padding: 1.25rem 1rem;
-      border: 1px solid #222;
-      border-radius: 14px;
-      background: #111;
-      cursor: pointer;
-      color: #f0f0f0;
-      font-size: 15px;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      transition: border-color 0.15s, background 0.15s;
-    }
-    .lang-btn:hover { border-color: #444; background: #161616; }
-    .lang-btn .flag { font-size: 28px; }
-    .lang-btn .lname { font-size: 12px; color: #555; font-weight: 400; }
-
-    .type-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-    }
-    .type-btn {
-      padding: 1rem 0.75rem;
-      border: 1px solid #222;
-      border-radius: 12px;
-      background: #111;
-      cursor: pointer;
-      font-size: 13px;
-      color: #888;
-      transition: all 0.15s;
-      text-align: left;
-      line-height: 1.5;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .type-btn:hover, .type-btn.selected { border-color: #f0f0f0; color: #f0f0f0; background: #161616; }
-    .type-btn .t-icon { font-size: 18px; }
-    .type-btn .t-name { font-size: 13px; font-weight: 500; }
-    .type-btn .t-desc { font-size: 11px; color: #555; }
-    .type-btn.selected .t-desc { color: #888; }
-
-    .main-btn {
-      width: 100%;
-      padding: 1rem;
-      border: 1px solid #333;
-      border-radius: 14px;
-      background: #f0f0f0;
-      color: #0a0a0a;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 600;
-      margin-top: 1.25rem;
-      transition: background 0.15s;
-    }
-    .main-btn:hover { background: #ddd; }
-
-    .hak-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 1.5rem;
-      width: 100%;
-    }
-    .hak-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #f0f0f0;
-      transition: background 0.3s;
-    }
-    .hak-dot.used { background: #333; }
-    .hak-label {
-      font-size: 11px;
-      color: #444;
-      letter-spacing: 0.08em;
-      margin-left: 4px;
-    }
-
-    .content-card {
-      background: #111;
-      border: 1px solid #1e1e1e;
-      border-radius: 16px;
-      padding: 1.5rem 1.25rem;
-      width: 100%;
-      margin-bottom: 1.25rem;
-    }
-    .content-tag {
-      display: inline-block;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #444;
-      border: 1px solid #222;
-      border-radius: 6px;
-      padding: 3px 8px;
-      margin-bottom: 1rem;
-    }
-    .content-text { font-size: 16px; line-height: 1.8; color: #e0e0e0; }
-
-    .action-row { display: flex; gap: 10px; width: 100%; }
-    .action-btn {
-      flex: 1;
-      padding: 0.85rem 0.5rem;
-      border: 1px solid #222;
-      border-radius: 10px;
-      background: #111;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      color: #aaa;
-      transition: all 0.15s;
-      text-align: center;
-    }
-    .action-btn:hover { border-color: #444; color: #f0f0f0; }
-
-    .donate-btn {
-      width: 100%;
-      margin-top: 1rem;
-      padding: 1rem 1.25rem;
-      border: 1px solid #1e1e1e;
-      border-radius: 14px;
-      background: transparent;
-      cursor: pointer;
-      font-size: 13px;
-      color: #555;
-      line-height: 1.6;
-      text-align: center;
-      transition: color 0.15s, border-color 0.15s;
-      white-space: pre-line;
-    }
-    .donate-btn:hover { color: #aaa; border-color: #333; }
-
-    .back-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 13px;
-      color: #444;
-      margin-top: 1.5rem;
-      padding: 0;
-    }
-    .back-btn:hover { color: #888; }
-
-    /* Share nudge */
-    .share-nudge {
-      width: 100%;
-      margin-top: 1rem;
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 14px;
-      padding: 1.25rem;
-      text-align: center;
-    }
-    .nudge-text {
-      font-size: 13px;
-      color: #888;
-      line-height: 1.6;
-      margin-bottom: 1rem;
-    }
-    .nudge-row { display: flex; gap: 8px; }
-    .nudge-share {
-      flex: 2;
-      padding: 0.75rem;
-      border: 1px solid #444;
-      border-radius: 10px;
-      background: transparent;
-      color: #f0f0f0;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .nudge-share:hover { background: #1a1a1a; }
-    .nudge-skip {
-      flex: 1;
-      padding: 0.75rem;
-      border: 1px solid #1e1e1e;
-      border-radius: 10px;
-      background: transparent;
-      color: #444;
-      font-size: 13px;
-      cursor: pointer;
-      transition: color 0.15s;
-    }
-    .nudge-skip:hover { color: #888; }
-
-    .counter {
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      color: #444;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-<div class="container">
-
-  <!-- Dil -->
-  <div class="screen active" id="lang-screen">
-    <p class="label">Choose your language / Dilini seç</p>
-    <div class="lang-buttons">
-      <button class="lang-btn" onclick="selectLang('tr')">
-        <span class="flag">🇹🇷</span>
-        <span>Türkçe</span>
-        <span class="lname">Devam et</span>
-      </button>
-      <button class="lang-btn" onclick="selectLang('en')">
-        <span class="flag">🇬🇧</span>
-        <span>English</span>
-        <span class="lname">Continue</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Tür -->
-  <div class="screen" id="type-screen">
-    <p class="label" id="type-label"></p>
-    <div class="type-grid" id="type-grid"></div>
-    <button class="main-btn" id="gen-btn" onclick="generate()"></button>
-  </div>
-
-  <!-- İçerik -->
-  <div class="screen" id="content-screen">
-    <p class="counter" id="counter-txt"></p>
-    <div class="hak-bar">
-      <div class="hak-dot" id="dot1"></div>
-      <div class="hak-dot" id="dot2"></div>
-      <span class="hak-label" id="hak-label"></span>
-    </div>
-    <div class="content-card">
-      <span class="content-tag" id="content-tag"></span>
-      <p class="content-text" id="content-text"></p>
-    </div>
-    <div class="action-row">
-      <button class="action-btn" id="share-btn" onclick="handleShare()"></button>
-      <button class="action-btn" id="another-btn" onclick="generate()"></button>
-    </div>
-    <div class="share-nudge" id="share-nudge" style="display:none;">
-      <p class="nudge-text" id="nudge-text"></p>
-      <div class="nudge-row">
-        <button class="nudge-share" id="nudge-share-btn" onclick="handleShare(); hideNudge()"></button>
-        <button class="nudge-skip" id="nudge-skip-btn" onclick="hideNudge()"></button>
-      </div>
-    </div>
-    <button class="donate-btn" id="donate-btn" onclick="handleDonate()"></button>
-    <button class="back-btn" id="back-btn" onclick="goLang()"></button>
-  </div>
-
-</div>
-
-<script>
-  let lang = 'tr';
-  let contentType = 'confession';
-  let sessionCount = 0;
-  let totalCount = parseInt(localStorage.getItem('qr_reads') || '0');
-  let lastIndex = {};
-
-  const categories = {
-    tr: [
-      { id: 'confession', icon: '😶', name: 'Anonim İtiraf', desc: 'Biri sana bir şey bırakmış' },
-      { id: 'hack',       icon: '💡', name: 'Hayat Tüyosu',  desc: 'Gerçekten işe yarayan' },
-      { id: 'legend',     icon: '🌆', name: 'Şehir Efsanesi', desc: 'İstanbul\'dan urban legend' },
-      { id: 'paranoia',   icon: '❓', name: 'Paranoya',       desc: 'Bu tesadüf değil...' },
-    ],
-    en: [
-      { id: 'confession', icon: '😶', name: 'Anonymous Confession', desc: 'Someone left this for you' },
-      { id: 'hack',       icon: '💡', name: 'Life Hack',            desc: 'Actually works' },
-      { id: 'legend',     icon: '🌆', name: 'Urban Legend',         desc: 'Istanbul stories' },
-      { id: 'paranoia',   icon: '❓', name: 'Paranoia',             desc: 'This is not a coincidence...' },
-    ]
-  };
-
-  const content = {
-    tr: {
-      confession: [
-        "Sabah metrosunda ağladım. Yanımdaki adam hiç bakmadı. Belki de en iyi tepkiydi.",
-        "Patronuma 'hasta' diyerek izin aldım. Aslında sadece bir gün sessizliğe ihtiyacım vardı.",
-        "Sevgilimle kavga ettiğimizde haklı olduğumu biliyorum ama özür dilemek zorundayım çünkü çok yorgunum.",
-        "İş arkadaşımın terfi aldığını duyduğumda mutlu gibi yaptım. İçimden ağladım.",
-        "Annem her gün arıyor. Bazen açmıyorum. Sonra kendimden nefret ediyorum.",
-        "Bu şehirde 4 yıldır yaşıyorum. Hâlâ gerçek bir arkadaşım yok.",
-        "Toplantılarda not alır gibi yapıyorum ama aslında alışveriş listesi yazıyorum.",
-        "Çok sevdiğim biri vardı. Söylemedim. Şimdi başkasıyla evlendi.",
-        "Ofiste herkesi seviyormuş gibi davranıyorum. Aslında sadece birkaçını seviyorum.",
-        "Kendi doğum günümü bile kutlamak istemiyorum artık. Sadece geçip gitmesini istiyorum.",
-        "Geceleri bazen sadece tavana bakıyorum ve hiçbir şey düşünmemeye çalışıyorum. Olmuyor.",
-        "Çok yorgunum ama bunu kimseye söyleyemiyorum çünkü herkes daha çok yorgun.",
-        "Eskiden hayallerim vardı. Şimdi sadece hafta sonu var.",
-        "Sevdiğim insanlara 'iyiyim' diyorum. Yalan söylemek bazen daha kolay.",
-        "Bu şehir beni tüketiyor ama gitmek için cesaretim yok.",
-        "Birini yıllarca sevdim, hiç söylemedim. Şimdi o kişi başka bir şehirde. Hâlâ düşünüyorum.",
-        "Metro'da yaşlı birine yer vermem gerekiyordu. Vermedim. Hâlâ utanıyorum.",
-        "Bir arkadaşımın başarısını kutlarken içimden 'neden ben değilim' diye düşündüm.",
-        "Toplantıda konuşmam gerekiyordu. Sustum. Hâlâ içimde dönüp duruyor.",
-        "Bugün biri bana 'nasılsın' diye sordu. 'İyiyim' dedim. İlk kez yalan gibi hissettirdi."
-      ],
-      hack: [
-        "Metro'da yer bulmak istiyorsan son vagon yerine ortadaki vagona bin. Herkes son vagona koşuyor.",
-        "Sabah alarmını 7 dakika arayla iki tane kur. İlkinde gözün açılıyor, ikincisinde gerçekten kalkıyorsun.",
-        "Toplantıdan önce 2 bardak su iç. Hem daha uyanık olursun hem de tuvalete gitmek için meşru bir çıkış bahanesi bulursun.",
-        "Akşam yemeği için ne yapacağını bilmiyorsan sabah düşün, akşam değil. Açken karar vermek her zaman kötü biter.",
-        "Telefonuna baktığında zamanın geçtiğini fark etmiyorsan ekranı siyah-beyaz moda al.",
-        "Zor bir mail yazıyorsan önce alıcı adresini silip öyle yaz. Erken göndermekten kurtulursun.",
-        "Yorgunken kahve yerine 10 dakika yürü. Kandaki oksijen seviyesi kafeine göre daha hızlı etkiler.",
-        "Sabah duşunu soğuk bitir — son 30 saniye. Gün boyu daha az yoruluyorsun.",
-        "Bir şeyi erteliyorsan sadece 2 dakika yap. Genelde durduramıyorsun kendini.",
-        "Kulaklık takıp müzik açmasan bile takılı görünmek seni yüzde seksen daha az konuşturur.",
-        "Gece uyuyamıyorsan ayaklarını soğuk suya sok 30 saniye. Vücut ısın düşünce uyku gelir.",
-        "Hafızana almak istediğin bir şey varsa yüksek sesle oku. Sessiz okumaktan üç kat daha iyi hatırlıyorsun.",
-        "Tartışmayı kazanmak istiyorsan karşındakinin söylediklerini önce tekrar et.",
-        "Uzun süre oturuyorsan her 45 dakikada bir ayağa kalk, 2 dakika yürü.",
-        "Pahalı bir şey almadan önce bir hafta bekle. Çoğu zaman istemediğini anlıyorsun.",
-        "Sabah ne yapacağını bilmiyorsan bir önceki gece tek bir görev yaz.",
-        "Zor bir konuşma yapacaksan yürürken yap. Hareket savunmacılığı azaltıyor.",
-        "Kalabalık bir yerde oturmak istiyorsan duvar tarafını seç.",
-        "Alışverişe aç gitme. Ama bir de susuz gitme — susuzluk da yanlış kararlar aldırıyor.",
-        "Bir şeyi unutmamak için telefona değil, bir yere yaz. Fiziksel yazma beyin için daha kalıcı."
-      ],
-      legend: [
-        "Boğaziçi Köprüsü'nün altında geceleri tekne bekleyen bir adam varmış. Kimse kim olduğunu bilmiyormuş. Soranlara sadece 'geçeceksiniz' diyormuş.",
-        "Kapalıçarşı'nın 91 kapısından birinin arkasında hâlâ eski İstanbul'a açılan bir pasaj varmış. Hangi kapı olduğunu yalnızca esnaf biliyor, yabancılara söylemiyorlar.",
-        "Kadıköy çarşısında yıllar önce her gece aynı saatte aynı masaya oturan bir adam varmış. Bir gün gelmemiş, masası boş kalmış. Garsonlar o masaya başkasını oturtmuyormuş.",
-        "Tünel'in altında, bilinen güzergahın dışında ikinci bir hat varmış. 1940'larda kullanılmış, sonra kapatılmış. Bazı gecelerde tren sesi geliyormuş buradan.",
-        "Beyoğlu'nda bir apartmanın asansörü hiçbir zaman 4. kata gitmiyormuş. Kat var, butonu var, ama asansör durmuyor. Sakinler sormuş, kimse açıklayamamış.",
-        "Adalar'da yasak olan araçlardan önce, her gece yarısı kimsenin binmediği bir fayton geçermiş. At sesi duyulurmuş ama fayton görünmezmiş.",
-        "Üsküdar'da çok eski bir çeşme varmış. Suyunu içenler o gece aynı rüyayı görüyormuş. Çeşme hâlâ orada, ama kimse artık içmiyor.",
-        "Galata Kulesi'nden atlayan Hezarfen'in kanadı Üsküdar'da bir çatıda bulunmuş. Ev sahipleri saklıyormuş. Müzeye vermemişler.",
-        "Boğaz'ın tam ortasında, ikinci köprünün altında, suya taş atsan geri geliyormuş. Balıkçılar biliyor ama konuşmuyor.",
-        "Eminönü'nde eski bir handa, tek bir oda kiralanmıyormuş yıllarca. Sonunda kiralayanlar bir ay içinde çıkıyormuş. Neden çıktıklarını anlatmıyorlarmış."
-      ],
-      paranoia: [
-        "Şu an burada bu metni okuyan kaç kişi olduğunu hiç düşündün mü? Hepsi aynı anda aynı cümleyi okuyordu. Sen de onlardan birisin.",
-        "Bu QR'ı bulman tesadüf değil. Ortalama bir insan günde 400 QR kod geçiyor, hiçbirini okutmuyor. Sen bu kodu okuttun. Neden?",
-        "Bugün kaç kişi seni fark etmeden izledi? Metro'da, kafede, sokakta. İnsanlar bakar ama baktıklarını söylemez.",
-        "Şu an okuduğun bu cümle, daha önce tam olarak bu kelimelerin bu sırayla bir arada olup olmadığını hiç düşündün mü? Muhtemelen ilk kez.",
-        "Bugün aklına gelen o fikir — senden önce başka biri de düşünmüştü. Belki şu an aynı şeyi yapıyor.",
-        "Bu metni okurken seni izleyen biri var mı? Bak. Belki yok. Belki var.",
-        "Şu an binlerce insan seninle aynı anda nefes alıp veriyor. Hiçbiriniz bunu planlamadınız.",
-        "Hayatında bir kez bile 'bu çok garip bir tesadüf' dediğin an oldu mu? O an gerçekten tesadüf müydü?",
-        "Bu kartı kim bıraktı buraya? Bir insan. O insan şu an nerede? Belki çok yakınında.",
-        "Şu an düşündüğün şeyi başka biri de düşünüyor. Dünyanın öbür tarafında. Aynı anda. Bu olasılık matematiksel olarak neredeyse kesin."
-      ]
-    },
-    en: {
-      confession: [
-        "I cried on the subway this morning. The person next to me never looked up. Maybe that was the best response.",
-        "I called in sick just because I needed one day of silence. I felt guilty, then didn't.",
-        "I know I'm right when we argue, but I apologize first because I'm too tired to be right.",
-        "When I heard my coworker got promoted, I smiled. Inside, I was falling apart.",
-        "My mom calls every day. Sometimes I don't answer. Then I hate myself for it.",
-        "I've lived in this city for three years. I still don't have a real friend here.",
-        "In meetings I pretend to take notes. I'm actually writing my grocery list.",
-        "There was someone I really loved. I never said it. Now they're married to someone else.",
-        "I tell everyone I'm fine. It's just easier than explaining.",
-        "I don't want to celebrate my birthday anymore. I just want it to pass quietly.",
-        "Some nights I stare at the ceiling trying to think of nothing. It never works.",
-        "I'm exhausted but I can't say it out loud. Everyone else seems more exhausted.",
-        "I used to have dreams. Now I just have weekends.",
-        "This city is draining me but I don't have the courage to leave.",
-        "I loved someone for years without saying it. They live in another city now. I still think about it.",
-        "I smiled at someone's good news today while thinking 'why not me.' I'm not proud of it.",
-        "Someone didn't give up their seat for me today. I thought about it all day.",
-        "I pretend to like more people than I actually do. It's just easier.",
-        "I had to speak up in a meeting today. I didn't. It's still spinning in my head.",
-        "Someone asked how I was doing today. I said fine. It was the first time it felt like a lie."
-      ],
-      hack: [
-        "Board the middle car of the train, not the last one. Everyone rushes to the ends.",
-        "Set two alarms 7 minutes apart. The first one wakes your eyes, the second gets you up.",
-        "Drink two glasses of water before a meeting. You'll be sharper and have a legitimate reason to leave.",
-        "If you can't decide what to eat for dinner, decide in the morning — not when you're hungry.",
-        "Switch your phone screen to grayscale if you can't stop scrolling. The dopamine hit disappears.",
-        "Before writing a difficult email, delete the recipient's address first. Write freely, add it last.",
-        "When tired, walk for 10 minutes instead of reaching for coffee. Oxygen hits faster than caffeine.",
-        "End your morning shower with 30 seconds of cold water. You'll feel less drained by evening.",
-        "If you're procrastinating, just do it for 2 minutes. You usually can't stop yourself after that.",
-        "Wear headphones even without music. You'll be approached 80% less.",
-        "Can't sleep? Put your feet in cold water for 30 seconds. Dropping your body temperature triggers sleep.",
-        "Read things out loud if you want to remember them. You retain three times more than silent reading.",
-        "In arguments, repeat back what the other person said first. People who feel heard fight less.",
-        "Stand up and walk for 2 minutes every 45 minutes. Focus increases by around 40%.",
-        "Before buying something expensive, wait a week. Most of the time you realize you don't want it.",
-        "Write tomorrow's one most important task before you sleep tonight. Morning you will thank you.",
-        "If you have something hard to say, say it while walking. Movement reduces defensiveness.",
-        "In a crowded place, take the wall seat. You'll be interrupted far less.",
-        "Don't just shop hungry — don't shop thirsty either. Dehydration causes bad decisions too.",
-        "Write things down physically instead of on your phone. Your brain retains handwritten notes longer."
-      ],
-      legend: [
-        "Under the Bosphorus Bridge, there was said to be a man waiting in a boat every night. No one knew who he was. When asked, he'd only say: 'You'll cross.'",
-        "Behind one of the 91 gates of the Grand Bazaar, there's supposedly a passage that still leads to the old Istanbul. Only the tradespeople know which one. They don't tell outsiders.",
-        "In Kadıköy market, years ago, a man sat at the same table every night at the same hour. One day he didn't come. The table stayed empty. The waiters never seated anyone else there.",
-        "Below Tünel, beyond the known route, there's said to be a second line — used in the 1940s, then closed. On some nights, people still hear the sound of a train.",
-        "In a Beyoğlu apartment, the elevator never stops at the 4th floor. The floor exists, the button exists, but the elevator never stops. Residents asked. No one could explain.",
-        "On the Princes' Islands, before cars were banned, a horse-drawn carriage was said to pass at midnight with no one riding it. You could hear the hooves. But never see the carriage.",
-        "In Üsküdar, there's an old fountain. Those who drink from it dream the same dream that night. The fountain is still there. No one drinks from it anymore.",
-        "The wing Hezarfen used to fly from Galata Tower was supposedly found on a rooftop in Üsküdar. The owners kept it hidden. They never gave it to any museum.",
-        "Right in the middle of the Bosphorus, under the second bridge, fishermen say if you throw a stone into the water, it comes back. They know. They don't talk about it.",
-        "In an old inn near Eminönü, one room went unrented for years. The few who eventually rented it moved out within a month. None of them said why."
-      ],
-      paranoia: [
-        "Have you ever thought about how many people are reading this exact text right now? All of them on the same sentence, at the same time. You're one of them.",
-        "Finding this QR wasn't random. The average person passes 400 QR codes a day and scans none. You scanned this one. Why?",
-        "How many people watched you today without you noticing? On the train, in the café, on the street. People look but never say they looked.",
-        "The sentence you just read — have you ever wondered if these exact words have ever appeared in this exact order before? Probably for the first time.",
-        "That idea you had today — someone else had it before you. They might be acting on it right now.",
-        "Is someone watching you read this? Look up. Maybe not. Maybe yes.",
-        "Right now, thousands of people are breathing in and out at exactly the same moment as you. None of you planned it.",
-        "Has there ever been a moment in your life where you said 'that's too much of a coincidence'? Was it really?",
-        "Who left this card here? A person. Where is that person right now? Possibly very close to you.",
-        "Whatever you're thinking right now, someone else on the other side of the world is thinking the exact same thing. At this exact moment. Mathematically, this is almost certain."
-      ]
-    }
-  };
-
-  const ui = {
-    tr: {
-      typeLabel: 'Ne duymak istiyorsun?',
-      genBtn: 'Göster →',
-      share: 'Paylaş',
-      another: 'Bir tane daha',
-      donate: 'Bu içerikler yolculuğunu biraz daha katlanılır yapıyorsa\nbir kahve bırak ☕',
-      back: '← Geri',
-      counter: n => `#${n}. okuma`,
-      hakFull: '2 hakkın var',
-      hakOne: '1 hakkın kaldı',
-      hakDone: 'Hakkın bitti — ama devam et',
-      nudgeText: 'Bu içeriği beğendiysen, biri daha görmek isteyebilir.',
-      nudgeShare: 'Paylaş',
-      nudgeSkip: 'Geç',
-      tags: { confession: 'Anonim İtiraf', hack: 'Hayat Tüyosu', legend: 'Şehir Efsanesi', paranoia: 'Paranoya' }
-    },
-    en: {
-      typeLabel: 'What do you want to hear?',
-      genBtn: 'Show me →',
-      share: 'Share',
-      another: 'One more',
-      donate: 'If these little moments make your commute slightly better,\nbuy me a coffee ☕',
-      back: '← Back',
-      counter: n => `reading #${n}`,
-      hakFull: '2 reads left',
-      hakOne: '1 read left',
-      hakDone: 'Out of reads — but keep going',
-      nudgeText: 'If you liked this, someone else might too.',
-      nudgeShare: 'Share',
-      nudgeSkip: 'Skip',
-      tags: { confession: 'Anonymous Confession', hack: 'Life Hack', legend: 'Urban Legend', paranoia: 'Paranoia' }
-    }
-  };
-
-  function show(id) {
-    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  function selectLang(l) {
-    lang = l;
-    sessionCount = 0;
-    const t = ui[l];
-    document.getElementById('type-label').textContent = t.typeLabel;
-    document.getElementById('gen-btn').textContent = t.genBtn;
-
-    const grid = document.getElementById('type-grid');
-    grid.innerHTML = '';
-    categories[l].forEach((cat, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'type-btn' + (i === 0 ? ' selected' : '');
-      btn.id = 'btn-' + cat.id;
-      btn.innerHTML = `<span class="t-icon">${cat.icon}</span><span class="t-name">${cat.name}</span><span class="t-desc">${cat.desc}</span>`;
-      btn.onclick = () => selectType(cat.id);
-      grid.appendChild(btn);
-    });
-    contentType = categories[l][0].id;
-    show('type-screen');
-  }
-
-  function selectType(t) {
-    contentType = t;
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
-    document.getElementById('btn-' + t).classList.add('selected');
-  }
-
-  function getRandom(arr, type) {
-    let idx;
-    do { idx = Math.floor(Math.random() * arr.length); } while (arr.length > 1 && idx === lastIndex[type]);
-    lastIndex[type] = idx;
-    return arr[idx];
-  }
-
-  function updateHakBar() {
-    const t = ui[lang];
-    const d1 = document.getElementById('dot1');
-    const d2 = document.getElementById('dot2');
-    const label = document.getElementById('hak-label');
-    if (sessionCount === 1) {
-      d1.classList.remove('used');
-      d2.classList.remove('used');
-      label.textContent = t.hakFull;
-    } else if (sessionCount === 2) {
-      d1.classList.add('used');
-      d2.classList.remove('used');
-      label.textContent = t.hakOne;
-    } else {
-      d1.classList.add('used');
-      d2.classList.add('used');
-      label.textContent = t.hakDone;
-    }
-  }
-
-  function generate() {
-    sessionCount++;
-    totalCount++;
-    try { localStorage.setItem('qr_reads', totalCount); } catch(e) {}
-
-    const arr = content[lang][contentType];
-    const val = getRandom(arr, contentType);
-    const t = ui[lang];
-
-    document.getElementById('counter-txt').textContent = t.counter(totalCount);
-    document.getElementById('content-tag').textContent = t.tags[contentType];
-    document.getElementById('content-text').textContent = val;
-    document.getElementById('share-btn').textContent = t.share;
-    document.getElementById('another-btn').textContent = t.another;
-    document.getElementById('donate-btn').textContent = t.donate;
-    document.getElementById('back-btn').textContent = t.back;
-
-    updateHakBar();
-
-    // 3. içerikten itibaren soft share nudge göster
-    const nudge = document.getElementById('share-nudge');
-    if (sessionCount >= 3) {
-      nudge.style.display = 'block';
-      document.getElementById('nudge-text').textContent = t.nudgeText;
-      document.getElementById('nudge-share-btn').textContent = t.nudgeShare;
-      document.getElementById('nudge-skip-btn').textContent = t.nudgeSkip;
-    } else {
-      nudge.style.display = 'none';
-    }
-
-    show('content-screen');
-  }
-
-  function hideNudge() {
-    document.getElementById('share-nudge').style.display = 'none';
-  }
-
-  function handleShare() {
-    const text = document.getElementById('content-text').textContent;
-    if (navigator.share) navigator.share({ text });
-    else if (navigator.clipboard) navigator.clipboard.writeText(text);
-  }
-
-  function handleDonate() {
-    alert(lang === 'tr' ? 'Yakında aktif olacak ☕' : 'Coming soon ☕');
-  }
-
-  function goLang() {
-    sessionCount = 0;
-    show('lang-screen');
-  }
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR Deneyim</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0a0a;
-      --bg2: #111;
-      --bg3: #161616;
-      --border: #1e1e1e;
-      --border2: #2a2a2a;
-      --text: #f0f0f0;
-      --text2: #aaa;
-      --text3: #555;
+      --bg: #0a0a0a; --bg2: #111; --bg3: #161616;
+      --border: #1e1e1e; --border2: #2a2a2a;
+      --text: #f0f0f0; --text2: #aaa; --text3: #555;
       --accent: #f0f0f0;
     }
-
     .night-mode {
-      --bg: #04040a;
-      --bg2: #0a0a14;
-      --bg3: #0f0f1a;
-      --border: #1a1a2e;
-      --border2: #252540;
-      --text: #d0d0ff;
-      --text2: #8888cc;
-      --text3: #444466;
+      --bg: #04040a; --bg2: #0a0a14; --bg3: #0f0f1a;
+      --border: #1a1a2e; --border2: #252540;
+      --text: #d0d0ff; --text2: #8888cc; --text3: #444466;
       --accent: #9090ff;
     }
 
     body {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       background: var(--bg);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: var(--text);
@@ -647,271 +36,210 @@
     .screen.active { display: flex; }
 
     .night-badge {
-      display: none;
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      color: var(--text3);
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-      text-align: center;
+      display: none; font-size: 11px; letter-spacing: 0.12em;
+      color: var(--text3); text-transform: uppercase;
+      margin-bottom: 1rem; text-align: center;
     }
     .night-mode .night-badge { display: block; }
 
     .label {
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text3);
-      margin-bottom: 2rem;
-      text-align: center;
+      font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text3); margin-bottom: 2rem; text-align: center;
     }
 
     .lang-buttons { display: flex; gap: 10px; width: 100%; }
     .lang-btn {
-      flex: 1;
-      padding: 1.25rem 1rem;
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      background: var(--bg2);
-      cursor: pointer;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
+      flex: 1; padding: 1.25rem 1rem;
+      border: 1px solid var(--border2); border-radius: 14px;
+      background: var(--bg2); cursor: pointer; color: var(--text);
+      font-size: 15px; font-weight: 500;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
       transition: all 0.15s;
     }
     .lang-btn:hover { border-color: var(--text3); background: var(--bg3); }
     .lang-btn .flag { font-size: 28px; }
     .lang-btn .lname { font-size: 12px; color: var(--text3); font-weight: 400; }
 
-    .type-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-    }
+    .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
     .type-btn {
       padding: 1rem 0.75rem;
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      background: var(--bg2);
-      cursor: pointer;
-      color: var(--text2);
-      transition: all 0.15s;
-      text-align: left;
-      line-height: 1.5;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      border: 1px solid var(--border2); border-radius: 12px;
+      background: var(--bg2); cursor: pointer; color: var(--text2);
+      transition: all 0.15s; text-align: left; line-height: 1.5;
+      display: flex; flex-direction: column; gap: 4px;
     }
-    .type-btn:hover, .type-btn.selected {
-      border-color: var(--accent);
-      color: var(--text);
-      background: var(--bg3);
-    }
+    .type-btn:hover, .type-btn.selected { border-color: var(--accent); color: var(--text); background: var(--bg3); }
     .type-btn .t-icon { font-size: 20px; }
     .type-btn .t-name { font-size: 13px; font-weight: 600; }
     .type-btn .t-desc { font-size: 11px; color: var(--text3); }
     .type-btn.selected .t-desc { color: var(--text2); }
 
     .main-btn {
-      width: 100%;
-      padding: 1rem;
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      background: var(--accent);
-      color: var(--bg);
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 700;
-      margin-top: 1.25rem;
-      transition: opacity 0.15s;
-      letter-spacing: 0.02em;
+      width: 100%; padding: 1rem;
+      border: 1px solid var(--border2); border-radius: 14px;
+      background: var(--accent); color: var(--bg);
+      cursor: pointer; font-size: 15px; font-weight: 700;
+      margin-top: 1.25rem; transition: opacity 0.15s; letter-spacing: 0.02em;
     }
     .main-btn:hover { opacity: 0.85; }
 
-    /* Hak bar */
-    .hak-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 1.5rem;
-      width: 100%;
-    }
-    .hak-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      transition: background 0.3s;
-    }
+    .hak-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; width: 100%; }
+    .hak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); transition: background 0.3s; }
     .hak-dot.used { background: var(--border2); }
     .hak-label { font-size: 11px; color: var(--text3); letter-spacing: 0.08em; margin-left: 4px; }
 
     .counter { font-size: 11px; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; margin-bottom: 1.5rem; text-align: center; }
 
     .content-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem 1.25rem;
-      width: 100%;
-      margin-bottom: 1.25rem;
-      transition: background 0.5s, border-color 0.5s;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem 1.25rem;
+      width: 100%; margin-bottom: 1rem;
     }
     .content-tag {
-      display: inline-block;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 6px;
-      padding: 3px 8px;
-      margin-bottom: 1rem;
+      display: inline-block; font-size: 10px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text3);
+      border: 1px solid var(--border2); border-radius: 6px;
+      padding: 3px 8px; margin-bottom: 1rem;
     }
     .content-text { font-size: 16px; line-height: 1.85; color: var(--text); }
 
-    /* Katman hissi */
     .layer-hint {
-      width: 100%;
-      padding: 0.85rem 1rem;
-      border: 1px dashed var(--border2);
-      border-radius: 10px;
-      font-size: 12px;
-      color: var(--text3);
-      text-align: center;
-      margin-bottom: 1rem;
-      letter-spacing: 0.04em;
-      line-height: 1.6;
+      width: 100%; padding: 0.75rem 1rem;
+      border: 1px dashed var(--border2); border-radius: 10px;
+      font-size: 12px; color: var(--text3); text-align: center;
+      margin-bottom: 1rem; letter-spacing: 0.04em; line-height: 1.6;
     }
 
-    .action-row { display: flex; gap: 10px; width: 100%; }
+    .action-row { display: flex; gap: 8px; width: 100%; }
     .action-btn {
-      flex: 1;
-      padding: 0.85rem 0.5rem;
-      border: 1px solid var(--border2);
-      border-radius: 10px;
-      background: var(--bg2);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text2);
-      transition: all 0.15s;
-      text-align: center;
+      flex: 1; padding: 0.85rem 0.25rem;
+      border: 1px solid var(--border2); border-radius: 10px;
+      background: var(--bg2); cursor: pointer;
+      font-size: 12px; font-weight: 500; color: var(--text2);
+      transition: all 0.15s; text-align: center;
     }
     .action-btn:hover { border-color: var(--text3); color: var(--text); }
-
-    /* Soft share nudge */
-    .share-nudge {
-      width: 100%;
-      margin-top: 1rem;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      padding: 1.25rem;
-      text-align: center;
+    .action-btn.share-card-btn {
+      border-color: var(--accent); color: var(--accent);
     }
-    .nudge-text { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 1rem; }
+    .action-btn.share-card-btn:hover { background: var(--bg3); }
+
+    .share-nudge {
+      width: 100%; margin-top: 1rem;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 14px; padding: 1.25rem; text-align: center;
+    }
+    .nudge-text { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
     .nudge-row { display: flex; gap: 8px; }
     .nudge-share {
       flex: 2; padding: 0.75rem;
-      border: 1px solid var(--border2);
-      border-radius: 10px;
-      background: transparent;
-      color: var(--text);
-      font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all 0.15s;
+      border: 1px solid var(--border2); border-radius: 10px;
+      background: transparent; color: var(--text);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
     }
     .nudge-share:hover { border-color: var(--accent); }
     .nudge-skip {
       flex: 1; padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: transparent;
-      color: var(--text3);
+      border: 1px solid var(--border); border-radius: 10px;
+      background: transparent; color: var(--text3);
       font-size: 13px; cursor: pointer;
     }
     .nudge-skip:hover { color: var(--text2); }
 
     .donate-btn {
-      width: 100%;
-      margin-top: 1rem;
-      padding: 1rem 1.25rem;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      background: transparent;
-      cursor: pointer;
-      font-size: 13px;
-      color: var(--text3);
-      line-height: 1.6;
-      text-align: center;
-      transition: color 0.15s, border-color 0.15s;
-      white-space: pre-line;
+      width: 100%; margin-top: 1rem; padding: 1rem 1.25rem;
+      border: 1px solid var(--border); border-radius: 14px;
+      background: transparent; cursor: pointer;
+      font-size: 13px; color: var(--text3);
+      line-height: 1.6; text-align: center;
+      transition: color 0.15s, border-color 0.15s; white-space: pre-line;
     }
     .donate-btn:hover { color: var(--text2); border-color: var(--border2); }
 
     .back-btn {
-      background: none; border: none;
-      cursor: pointer; font-size: 13px;
-      color: var(--text3); margin-top: 1.5rem; padding: 0;
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; color: var(--text3); margin-top: 1.5rem; padding: 0;
     }
     .back-btn:hover { color: var(--text2); }
 
     /* İtiraf formu */
-    .form-title {
-      font-size: 14px; font-weight: 600;
-      color: var(--text); margin-bottom: 0.5rem;
-      text-align: center; width: 100%;
-    }
-    .form-sub {
-      font-size: 12px; color: var(--text3);
-      text-align: center; margin-bottom: 1.25rem;
-      line-height: 1.6;
-    }
+    .form-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; text-align: center; width: 100%; }
+    .form-sub { font-size: 12px; color: var(--text3); text-align: center; margin-bottom: 1.25rem; line-height: 1.6; white-space: pre-line; }
     textarea {
-      width: 100%;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      padding: 1rem;
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.7;
-      resize: none;
-      height: 140px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.15s;
+      width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 12px; padding: 1rem; font-size: 14px; color: var(--text);
+      line-height: 1.7; resize: none; height: 140px; font-family: inherit;
+      outline: none; transition: border-color 0.15s;
     }
     textarea:focus { border-color: var(--text3); }
     textarea::placeholder { color: var(--text3); }
-
-    .form-note {
-      font-size: 11px; color: var(--text3);
-      text-align: center; margin: 0.75rem 0 1rem;
-      line-height: 1.5;
-    }
+    .form-note { font-size: 11px; color: var(--text3); text-align: center; margin: 0.75rem 0 1rem; line-height: 1.5; }
     .submit-btn {
-      width: 100%;
-      padding: 0.9rem;
-      border: 1px solid var(--border2);
-      border-radius: 12px;
-      background: var(--accent);
-      color: var(--bg);
-      font-size: 14px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.15s;
+      width: 100%; padding: 0.9rem; border: 1px solid var(--border2);
+      border-radius: 12px; background: var(--accent); color: var(--bg);
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
     }
     .submit-btn:hover { opacity: 0.85; }
     .submit-btn:disabled { opacity: 0.4; cursor: default; }
+    .success-msg { font-size: 14px; color: var(--text2); text-align: center; line-height: 1.7; padding: 1rem 0; }
 
-    .success-msg {
-      font-size: 14px; color: var(--text2);
-      text-align: center; line-height: 1.7;
-      padding: 1rem 0;
+    /* Share card overlay */
+    .share-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+      flex-direction: column; gap: 1rem;
     }
+    .share-overlay.active { display: flex; }
+
+    /* Görsel kart — canvas'a çekilecek */
+    #share-card {
+      width: 340px;
+      background: #0a0a0a;
+      border-radius: 20px;
+      padding: 2rem 1.75rem 1.5rem;
+      border: 1px solid #222;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    #share-card .sc-tag {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #444; border: 1px solid #222; border-radius: 6px;
+      padding: 3px 8px; display: inline-block; width: fit-content;
+    }
+    #share-card .sc-text {
+      font-size: 15px; line-height: 1.85; color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    #share-card .sc-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid #1a1a1a; padding-top: 1rem; margin-top: 0.5rem;
+    }
+    #share-card .sc-site {
+      font-size: 11px; color: #333; letter-spacing: 0.08em;
+    }
+    #share-card .sc-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #222;
+    }
+
+    .overlay-actions { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+    .overlay-btn {
+      flex: 1; padding: 0.85rem;
+      border: 1px solid #333; border-radius: 12px;
+      background: #111; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #f0f0f0;
+      transition: background 0.15s; text-align: center;
+    }
+    .overlay-btn:hover { background: #1a1a1a; }
+    .overlay-close {
+      font-size: 13px; color: #444; background: none;
+      border: none; cursor: pointer; padding: 0.25rem;
+    }
+    .overlay-close:hover { color: #888; }
+
+    .generating-msg { font-size: 13px; color: #555; text-align: center; }
   </style>
 </head>
 <body>
@@ -919,17 +247,15 @@
 
   <!-- Dil -->
   <div class="screen active" id="lang-screen">
-    <p class="night-badge" id="night-badge">🌙 Gece modu aktif</p>
+    <p class="night-badge" id="night-badge"></p>
     <p class="label">Choose your language / Dilini seç</p>
     <div class="lang-buttons">
       <button class="lang-btn" onclick="selectLang('tr')">
-        <span class="flag">🇹🇷</span>
-        <span>Türkçe</span>
+        <span class="flag">🇹🇷</span><span>Türkçe</span>
         <span class="lname">Devam et</span>
       </button>
       <button class="lang-btn" onclick="selectLang('en')">
-        <span class="flag">🇬🇧</span>
-        <span>English</span>
+        <span class="flag">🇬🇧</span><span>English</span>
         <span class="lname">Continue</span>
       </button>
     </div>
@@ -956,14 +282,14 @@
     </div>
     <p class="layer-hint" id="layer-hint"></p>
     <div class="action-row">
-      <button class="action-btn" id="share-btn" onclick="handleShare()"></button>
-      <button class="action-btn" id="another-btn" onclick="generate()"></button>
-      <button class="action-btn" id="confess-btn" onclick="goConfess()"></button>
+      <button class="action-btn share-card-btn" onclick="openShareCard()">🖼 Kart</button>
+      <button class="action-btn" onclick="generate()" id="another-btn"></button>
+      <button class="action-btn" onclick="goConfess()" id="confess-btn"></button>
     </div>
     <div class="share-nudge" id="share-nudge" style="display:none;">
       <p class="nudge-text" id="nudge-text"></p>
       <div class="nudge-row">
-        <button class="nudge-share" id="nudge-share-btn" onclick="handleShare(); hideNudge()"></button>
+        <button class="nudge-share" id="nudge-share-btn" onclick="openShareCard(); hideNudge()"></button>
         <button class="nudge-skip" id="nudge-skip-btn" onclick="hideNudge()"></button>
       </div>
     </div>
@@ -979,9 +305,27 @@
     <p class="form-note" id="form-note"></p>
     <button class="submit-btn" id="submit-btn" onclick="submitConfession()"></button>
     <p class="success-msg" id="success-msg" style="display:none;"></p>
-    <button class="back-btn" id="confess-back-btn" onclick="goContent()" style="margin-top:1rem;"></button>
+    <button class="back-btn" id="confess-back-btn" onclick="goContent()"></button>
   </div>
 
+</div>
+
+<!-- Share Card Overlay -->
+<div class="share-overlay" id="share-overlay">
+  <div id="share-card">
+    <span class="sc-tag" id="sc-tag"></span>
+    <p class="sc-text" id="sc-text"></p>
+    <div class="sc-footer">
+      <span class="sc-site" id="sc-site"></span>
+      <span class="sc-dot"></span>
+    </div>
+  </div>
+  <p class="generating-msg" id="generating-msg" style="display:none;"></p>
+  <div class="overlay-actions">
+    <button class="overlay-btn" id="download-btn" onclick="downloadCard()">⬇ İndir</button>
+    <button class="overlay-btn" id="share-native-btn" onclick="shareNative()">↑ Paylaş</button>
+  </div>
+  <button class="overlay-close" onclick="closeShareCard()">✕ Kapat</button>
 </div>
 
 <script>
@@ -991,15 +335,12 @@
   let totalCount = parseInt(localStorage.getItem('qr_reads') || '0');
   let lastIndex = {};
   let isNight = false;
+  let cardBlob = null;
 
-  // Gece modu kontrolü
   function checkNightMode() {
     const h = new Date().getHours();
     isNight = h >= 22 || h < 6;
-    if (isNight) {
-      document.body.classList.add('night-mode');
-      document.getElementById('night-badge').style.display = 'block';
-    }
+    if (isNight) document.body.classList.add('night-mode');
   }
   checkNightMode();
 
@@ -1029,7 +370,6 @@
         "Bu şehirde 4 yıldır yaşıyorum. Hâlâ gerçek bir arkadaşım yok.",
         "Toplantılarda not alır gibi yapıyorum ama aslında alışveriş listesi yazıyorum.",
         "Çok sevdiğim biri vardı. Söylemedim. Şimdi başkasıyla evlendi.",
-        "Ofiste herkesi seviyormuş gibi davranıyorum. Aslında sadece birkaçını seviyorum.",
         "Kendi doğum günümü bile kutlamak istemiyorum artık. Sadece geçip gitmesini istiyorum.",
         "Geceleri bazen sadece tavana bakıyorum ve hiçbir şey düşünmemeye çalışıyorum. Olmuyor.",
         "Çok yorgunum ama bunu kimseye söyleyemiyorum çünkü herkes daha çok yorgun.",
@@ -1040,7 +380,8 @@
         "Metro'da yaşlı birine yer vermem gerekiyordu. Vermedim. Hâlâ utanıyorum.",
         "Bir arkadaşımın başarısını kutlarken içimden 'neden ben değilim' diye düşündüm.",
         "Toplantıda konuşmam gerekiyordu. Sustum. Hâlâ içimde dönüp duruyor.",
-        "Bugün biri bana 'nasılsın' diye sordu. 'İyiyim' dedim. İlk kez yalan gibi hissettirdi."
+        "Bugün biri bana 'nasılsın' diye sordu. 'İyiyim' dedim. İlk kez yalan gibi hissettirdi.",
+        "Ofiste herkesi seviyormuş gibi davranıyorum. Aslında sadece birkaçını seviyorum."
       ],
       confession_night: [
         "Gece 2'de ağlıyorum. Sebebi bile yok. Ya da çok fazla sebep var, bilmiyorum.",
@@ -1179,7 +520,6 @@
     tr: {
       typeLabel: 'Ne duymak istiyorsun?',
       genBtn: 'Göster →',
-      share: '↑ Paylaş',
       another: '↻ Bir tane daha',
       confess: '✍️ İtiraf et',
       donate: 'Yeni kayıtların şehirde yaşamaya devam etmesi için\nbir kahve bırak ☕',
@@ -1189,7 +529,7 @@
       hakOne: '1 hakkın kaldı',
       hakDone: 'Hakkın bitti — ama devam et',
       nudgeText: '"Bu içeriği beğendiysen, biri daha görmek isteyebilir."',
-      nudgeShare: 'Paylaş',
+      nudgeShare: '🖼 Kart oluştur',
       nudgeSkip: 'Geç',
       layerHint: '▸ Devamı var. Şehirde başka bir QR seni bekliyor.',
       layerHintNight: '🌙 Gece kayıtları farklı. Gündüz tekrar dene.',
@@ -1201,12 +541,15 @@
       successMsg: '✓ Alındı. Belki yakında birileri okur.',
       confessBack: '← Geri dön',
       nightBadge: '🌙 Gece modu aktif',
+      scSite: 'qr deneyim',
+      downloadBtn: '⬇ İndir',
+      shareBtn: '↑ Paylaş',
+      generating: 'Kart hazırlanıyor...',
       tags: { confession: 'Anonim İtiraf', hack: 'Hayat Tüyosu', legend: 'Şehir Efsanesi', paranoia: 'Paranoya' }
     },
     en: {
       typeLabel: 'What do you want to hear?',
       genBtn: 'Show me →',
-      share: '↑ Share',
       another: '↻ One more',
       confess: '✍️ Confess',
       donate: 'Leave a coffee so new recordings keep living in the city ☕',
@@ -1216,7 +559,7 @@
       hakOne: '1 read left',
       hakDone: 'Out of reads — but keep going',
       nudgeText: '"If you liked this, someone else might too."',
-      nudgeShare: 'Share',
+      nudgeShare: '🖼 Create card',
       nudgeSkip: 'Skip',
       layerHint: '▸ There\'s more. Another QR in the city is waiting for you.',
       layerHintNight: '🌙 Night recordings are different. Come back in daylight.',
@@ -1228,6 +571,10 @@
       successMsg: '✓ Received. Someone might read it soon.',
       confessBack: '← Go back',
       nightBadge: '🌙 Night mode active',
+      scSite: 'qr experience',
+      downloadBtn: '⬇ Download',
+      shareBtn: '↑ Share',
+      generating: 'Generating card...',
       tags: { confession: 'Anonymous Confession', hack: 'Life Hack', legend: 'Urban Legend', paranoia: 'Paranoia' }
     }
   };
@@ -1285,7 +632,6 @@
     totalCount++;
     try { localStorage.setItem('qr_reads', totalCount); } catch(e) {}
 
-    // Gece modunda itiraf kategorisi için gece içeriği
     let arr = content[lang][contentType];
     if (isNight && contentType === 'confession' && content[lang]['confession_night']) {
       arr = Math.random() > 0.5 ? content[lang]['confession_night'] : content[lang][contentType];
@@ -1296,7 +642,6 @@
     document.getElementById('counter-txt').textContent = t.counter(totalCount);
     document.getElementById('content-tag').textContent = t.tags[contentType];
     document.getElementById('content-text').textContent = val;
-    document.getElementById('share-btn').textContent = t.share;
     document.getElementById('another-btn').textContent = t.another;
     document.getElementById('confess-btn').textContent = t.confess;
     document.getElementById('donate-btn').textContent = t.donate;
@@ -1322,10 +667,56 @@
     document.getElementById('share-nudge').style.display = 'none';
   }
 
-  function handleShare() {
-    const text = document.getElementById('content-text').textContent;
-    if (navigator.share) navigator.share({ text });
-    else if (navigator.clipboard) navigator.clipboard.writeText(text);
+  // Share card
+  function openShareCard() {
+    const t = ui[lang];
+    document.getElementById('sc-tag').textContent = t.tags[contentType];
+    document.getElementById('sc-text').textContent = document.getElementById('content-text').textContent;
+    document.getElementById('sc-site').textContent = t.scSite;
+    document.getElementById('download-btn').textContent = t.downloadBtn;
+    document.getElementById('share-native-btn').textContent = t.shareBtn;
+    document.getElementById('generating-msg').style.display = 'none';
+    document.getElementById('share-overlay').classList.add('active');
+    cardBlob = null;
+  }
+
+  function closeShareCard() {
+    document.getElementById('share-overlay').classList.remove('active');
+  }
+
+  async function generateCardBlob() {
+    if (cardBlob) return cardBlob;
+    const t = ui[lang];
+    document.getElementById('generating-msg').textContent = t.generating;
+    document.getElementById('generating-msg').style.display = 'block';
+    const card = document.getElementById('share-card');
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#0a0a0a',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    document.getElementById('generating-msg').style.display = 'none';
+    return new Promise(res => canvas.toBlob(blob => { cardBlob = blob; res(blob); }, 'image/png'));
+  }
+
+  async function downloadCard() {
+    const blob = await generateCardBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'qr-deneyim.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function shareNative() {
+    const blob = await generateCardBlob();
+    const file = new File([blob], 'qr-deneyim.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
+    } else {
+      await downloadCard();
+    }
   }
 
   function handleDonate() {
@@ -1341,6 +732,9 @@
     document.getElementById('submit-btn').textContent = t.submitBtn;
     document.getElementById('confess-back-btn').textContent = t.confessBack;
     document.getElementById('success-msg').style.display = 'none';
+    document.getElementById('confess-input').style.display = 'block';
+    document.getElementById('form-note').style.display = 'block';
+    document.getElementById('submit-btn').style.display = 'block';
     document.getElementById('confess-input').value = '';
     document.getElementById('submit-btn').disabled = false;
     show('confess-screen');
@@ -1349,10 +743,8 @@
   async function submitConfession() {
     const text = document.getElementById('confess-input').value.trim();
     if (!text) return;
-
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
-
     try {
       await fetch('https://formspree.io/f/mgodravn', {
         method: 'POST',
@@ -1365,9 +757,7 @@
       const msg = document.getElementById('success-msg');
       msg.textContent = ui[lang].successMsg;
       msg.style.display = 'block';
-    } catch(e) {
-      btn.disabled = false;
-    }
+    } catch(e) { btn.disabled = false; }
   }
 
   function goContent() { show('content-screen'); }
@@ -1375,4 +765,3 @@
 </script>
 </body>
 </html>
-
